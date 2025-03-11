@@ -1178,7 +1178,7 @@ void modifyPerson(Addressbooks* abs) {
     else {
         // 未找到联系人
         std::cout << "查无此人！！" << std::endl;
-        system("pause");
+        //system("pause");
         return;
     }
     std::cout << "已修改完成！" << std::endl;
@@ -1245,10 +1245,10 @@ void to_select(int n, Addressbooks* abs) {
     case 5:  // 删除联系人
     {
         std::string name;
-        std::cin >> name;
+
         nojump_deleteperson:
         std::cout << "请输入删除联系人的姓名： " << std::endl;
- 
+         std::cin >> name;
         if (name == "主菜单") {
 
             std::cout << "即将返回主菜单！！！！" << std::endl;
@@ -1404,6 +1404,7 @@ void readAddressbooks(Addressbooks* abs) {
 }
 void UpdateLog()
 {
+	system("cls");
 	std::cout << "更新日志" << std::endl;
 	std::cout << "版本号：V2.0" << std::endl;
 	std::cout << "更新时间：2021年5月20日" << std::endl;
