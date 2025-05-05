@@ -36,6 +36,7 @@ int blocks[7][4] = {
 	{3,5,4,6} };
 int haveground = 0;
 int havesettingbg;
+int temp_difficulty = 0; // 临时变量
 
 class point {
 public:
@@ -820,21 +821,26 @@ void showgamesetting()
 		setlinecolor(RGB(160, 160, 160));
 		fillrectangle(460, 165, 490, 175);
 		setlinecolor(BLACK);
-		settextstyle(35, 0, _T("黑体"));//设置字体大小为30，字体为黑体
+		settextstyle(32, 0, _T("黑体"));//设置字体大小为30，字体为黑体
 		centerX1 = (120 - textwidth(_T("主菜单"))) / 2;
 		centerY1 = (40 - textheight(_T("主菜单"))) / 2;
+		int centerX2 = (120 - textwidth(_T("保存"))) / 2;
+		int centerY2 = (40 - textheight(_T("保存"))) / 2;
 		setfillcolor(RGB(253, 208, 222));
-		fillrectangle(340, 500, 460, 540);
+		fillrectangle(540, 500, 660, 540);
+		fillrectangle(140, 500, 260, 540);
 		setbkmode(TRANSPARENT);
-		outtextxy(centerX1 + 340, centerY1 + 500, _T("主菜单"));
+		outtextxy(centerX2 + 140, centerY2 + 500, _T("保存"));
 		Sleep(50);
+		outtextxy(centerX1 + 540, centerY1 + 500, _T("主菜单"));
 		setbkmode(OPAQUE);
 	}
 	setbkmode(OPAQUE);
 	settextstyle(30, 0, _T("黑体"));//设置字体大小为30，字体为黑体
 	centerX1 = (120 - textwidth(_T("简单"))) / 2;
 	centerY1 = (50 - textheight(_T("简单"))) / 2;
-	switch (game.difficulty)
+	temp_difficulty = (temp_difficulty + 4) % 4;
+	switch (temp_difficulty)
 	{
 	case 0:
 	{
@@ -864,9 +870,10 @@ void showgamesetting()
 }
 void gamesetting()
 {
+	temp_difficulty = game.difficulty;
 	havesettingbg = 0;
 	while (1) {
-		Sleep(588);
+		Sleep(300);
 		if (!havesettingbg)
 		{
 			showgamesetting();
@@ -1405,6 +1412,7 @@ void drawnext(block next) // 画下一个
 void mousemsg_setting()
 {
 	int yes11 = 0;
+	int yes12 = 0;
 	peekmessage(&msg, EX_MOUSE);// 获取鼠标消息
 	while (1)
 	{
@@ -1412,31 +1420,51 @@ void mousemsg_setting()
 		if (isinarea(msg.x, msg.y, 240, 155, 290, 185) && msg.message == WM_LBUTTONDOWN)
 		{
 			std::cout << "难度发生变化" << std::endl;
-			game.difficulty -= 1;
+			temp_difficulty -= 1;
 			return;
 		}
 		else if (isinarea(msg.x, msg.y, 450, 155, 500, 185) && msg.message == WM_LBUTTONDOWN)
 		{
 			std::cout << "难度发生变化" << std::endl;
-			game.difficulty += 1;
+			temp_difficulty += 1;
 			return;
 		}
-		else if (isinarea(msg.x, msg.y, 340, 500, 460, 540) && msg.message == WM_LBUTTONUP)
+		else if (isinarea(msg.x, msg.y, 540, 500, 660, 540) && msg.message == WM_LBUTTONUP)
 		{
+			std::cout << "返回主菜单" << std::endl;
 			to_select();
 		}
-		else if (isinarea(msg.x, msg.y, 340, 500, 460, 540))
+		else if (isinarea(msg.x, msg.y, 540, 500, 660, 540))
 		{
 			if (!yes11)
 			{
-				drawmsg_to_select(340, 500, 460, 540, 5, 8, 3);
+				drawmsg_to_select(540, 500, 660, 540, 10, 12, 5);
 				yes11 = 1;
 			}
 		}
-		else if (!isinarea(msg.x, msg.y, 340, 500, 460, 540))
+		else if (!isinarea(msg.x, msg.y, 540, 500, 660, 540))
 		{
-			undo_drawmsg_to_select(340, 500, 460, 540, 5, 8, 3);
+			undo_drawmsg_to_select(540, 500, 660, 540, 10, 12, 5);
 			yes11 = 0;
+		}
+		if (msg.message == WM_LBUTTONUP && isinarea(msg.x, msg.y, 140, 500, 260, 540))
+		{
+			std::cout << "保存设置" << std::endl;
+			game.difficulty = temp_difficulty;
+			return;
+		}
+		else if (isinarea(msg.x, msg.y, 140, 500, 260, 540))
+		{
+			if (!yes12)
+			{
+				drawmsg_to_select(140, 500, 260, 540, 10, 12, 5);
+				yes12 = 1;
+			}
+		}
+		else if (!isinarea(msg.x, msg.y, 140, 500, 260, 540))
+		{
+			undo_drawmsg_to_select(140, 500, 260, 540, 10, 12, 5);
+			yes12 = 0;
 		}
 	}
 }
