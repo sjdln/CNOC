@@ -6,21 +6,19 @@
 #include<ctime>
 #include <conio.h>
 #include<random>
+#include<fstream>
 #define pxsize 10
 
 void AAA_update_note()
 {
-	std::cout << "代码来自 -- 春霁柟 俄罗斯方块 v2.0" << std::endl;
-	std::cout << "2.0更新日志：" << std::endl;
-	std::cout << "1、添加了难度系统" << std::endl;
-	std::cout << "2、优化了所有游戏界面" << std::endl;
-	std::cout << "3、为小瑜考虑改成单击进入选项" << std::endl;
-	std::cout << "4、更新了更新日志" << std::endl;
-	std::cout << "5、更新了setting界面" << std::endl;
-	std::cout << "6、更新了help界面" << std::endl;
-	std::cout << "7、总之所有ui更新了，而且纯手写挺累的quq" << std::endl;
-	std::cout << "8、为了多方便自己写代码，把很多重复的代码封装成函数了嘿嘿" << std::endl;
-	std::cout << "本次更新于：2025年5月4号" << std::endl;
+	std::cout << "代码来自 -- 春霁柟 俄罗斯方块 v2.1" << std::endl;
+	std::cout << "2.1更新日志：" << std::endl;
+	std::cout << "1、添加了 setting 保存键" << std::endl;
+	std::cout << "2、更新了setting 界面" << std::endl;
+	std::cout << "3、更新了 help 界面" << std::endl;
+	std::cout << "4、更新了游戏最高分数功能" << std::endl;
+	std::cout << "为小瑜考虑改成单击进入选项" << std::endl;
+	std::cout << "本次更新于：2025年5月5号" << std::endl;
 }
 int stop1 = 0;
 int isrotate = 0;
@@ -38,6 +36,7 @@ int blocks[7][4] = {
 	{3,5,4,6} };
 int haveground = 0;
 int havesettingbg;
+
 class point {
 public:
 	int x, y; // 行 列
@@ -80,16 +79,22 @@ bkcolor block::img[7] = {
 {139, 69, 19, 210, 105, 30},
 {139, 69, 19, 210, 105, 30},
 {255, 215, 0, 255, 255, 0},
-{255, 215, 0, 255, 255, 0} };
+{255, 215, 0, 255, 255, 0} 
+};
+
+void recordscore(); // 记录分数
+int readscore(); // 显示最高分数
 class GameMessage {
 public:
 	int score;
 	int speed;
 	int difficulty;
+	int lastscore;
 	GameMessage() {
 		score = 0;
 		speed = 1;
 		difficulty = 1;
+		lastscore = readscore();
 	}
 };
 // 代码来自  春霁柟 \(^v^)/
@@ -468,6 +473,7 @@ void gameplay()
 	game.score = 0;
 	game.speed = 1;
 	block now;
+	game.lastscore = readscore();
 	Sleep(1000);
 	switch (game.difficulty)
 	{
@@ -878,36 +884,46 @@ void gamehelp()
 	setbkcolor(WHITE);//设置背景颜色为白色 比较不瞎眼
 	cleardevice(); // 清屏
 	drawallframe(800, 600);
+	settextcolor(RGB(0, 255, 255));
+	settextstyle(50, 0, _T("黑体"));//设置字体大小为30，字体为黑体
+	int centerX1 = (800 - textwidth(_T("游戏帮助"))) / 2;
+	int centerY1 = (100 - textheight(_T("游戏帮助"))) / 2;
+	outtextxy(centerX1, centerY1, _T("游戏帮助"));
+	setlinecolor(RGB(253, 208, 222));//设置线条颜色为粉红色
+	setlinestyle(PS_SOLID, 5);//设置线条风格为实线
+	line(0, 100, 800, 100);
 	settextcolor(RGB(0, 0, 255));//设置字体颜色为粉红色
-	settextstyle(80, 0, _T("黑体"));//设置字体大小为30，字体为黑体
-	outtextxy(20, 20, _T("上---旋转"));
-	outtextxy(400, 20, _T("下---下移"));
-	outtextxy(20, 400, _T("左---左移"));
-	outtextxy(400, 400, _T("右---上移"));
+	settextstyle(40, 0, _T("黑体"));//设置字体大小为30，字体为黑体
+	int x1 = 180;
+	int y1 = 200;
+	outtextxy(x1, y1, _T("上---旋转"));
+	outtextxy(x1 + 240, y1, _T("下---下移"));
+	outtextxy(x1, y1 + 150, _T("左---左移"));
+	outtextxy(x1 + 240, y1 + 150, _T("右---上移"));
 	setlinecolor(RGB(128, 128, 128));//设置线条颜色为灰色
 	setlinestyle(PS_SOLID, 5);//设置线条粗细为5
 	setfillcolor(WHITE);//设置填充颜色为白色
-	fillrectangle(400, 300, 600, 350);
+	fillrectangle(300, 500, 500, 550);
 	settextcolor(RGB(255, 0, 0));//设置字体颜色为红色
 	settextstyle(30, 0, _T("黑体"));//设置字体大小为30，字体为黑体
-	int centerX1 = (200 - textwidth(_T("主菜单"))) / 2;
-	int centerY1 = (50 - textheight(_T("主菜单"))) / 2;
-	outtextxy(400 + centerX1, 300 + centerY1, _T("主菜单"));//输出文字
+	centerX1 = (200 - textwidth(_T("主菜单"))) / 2;
+	centerY1 = (50 - textheight(_T("主菜单"))) / 2;
+	outtextxy(300 + centerX1, 500 + centerY1, _T("主菜单"));//输出文字
 	int yes2 = 0;
 	peekmessage(&msg, EX_MOUSE);// 获取鼠标消息
 	while (1) {
 		peekmessage(&msg, EX_MOUSE);// 获取鼠标消息
-		if (yes2 == 1 && isinarea(msg.x, msg.y, 400, 300, 600, 350))
+		if (yes2 == 1 && isinarea(msg.x, msg.y, 300, 500, 500, 550))
 		{
-			drawmsg_to_select(400, 300, 600, 350, 10, 20, 4);
+			drawmsg_to_select(300, 500, 500, 550, 10, 20, 4);
 			yes2 = 0;
 		}
-		if (yes2 == 0 && !isinarea(msg.x, msg.y, 400, 300, 600, 350))
+		if (yes2 == 0 && !isinarea(msg.x, msg.y, 300, 500, 500, 550))
 		{
-			undo_drawmsg_to_select(400, 300, 600, 350, 10, 20, 4);
+			undo_drawmsg_to_select(300, 500, 500, 550, 10, 20, 4);
 			yes2 = 1;
 		}
-		if (msg.message == WM_LBUTTONUP && isinarea(msg.x, msg.y, 400, 300, 600, 350)) {
+		if (msg.message == WM_LBUTTONUP && isinarea(msg.x, msg.y, 300, 500, 500, 550)) {
 			to_select();
 		}
 	}
@@ -977,14 +993,20 @@ void drawgameframe(block next)
 		//setlinecolor(RED);//设置线条颜色为红色
 		//setlinestyle(PS_DOT, 5);//设置线条风格为虚线
 		//line(52, 150, 300, 150);
-
+		// 画上一次的最高分数
+		settextcolor(RGB(231, 113, 215));//设置字体颜色为粉红色
+		settextstyle(30, 0, _T("黑体"));//设置字体大小为30，字体为黑体
+		outtextxy(80, 30, _T("最高分："));
+		std::string temps = std::to_string(readscore());
+		std::wstring wideStr = std::wstring(temps.begin(), temps.end());
+		outtextxy(190, 32, wideStr.c_str());
 		// 画分数
 		settextcolor(RGB(231, 113, 215));//设置字体颜色为粉红色
 		settextstyle(30, 0, _T("黑体"));//设置字体大小为30，字体为黑体
-		outtextxy(80, 60, _T("分数："));
-		std::string temps = std::to_string(game.score);
-		std::wstring wideStr = std::wstring(temps.begin(), temps.end());
-		outtextxy(160, 62, wideStr.c_str());
+		outtextxy(80, 70, _T("分数："));
+		temps = std::to_string(game.score);
+		wideStr = std::wstring(temps.begin(), temps.end());
+		outtextxy(160, 72, wideStr.c_str());
 		// 画下一个
 		settextcolor(RGB(0, 0, 255));//设置字体颜色为粉红色
 		settextstyle(30, 0, _T("黑体"));//设置字体大小为30，字体为黑体
@@ -1186,6 +1208,7 @@ void overselect()
 	int centerX4 = (600 - textwidth(_T("游 | 戏 | 结 | 束"))) / 2;
 	int centerY4 = (400 - textheight(_T("游 | 戏 | 结 | 束"))) / 2;
 	outtextxy(0 + centerX4, 100 + centerY4, _T("游 | 戏 | 结 | 束"));//输出文字
+	recordscore();
 	if (overmousemsg()) {
 		closegraph();
 		std::cout << "再来一局" << std::endl;
@@ -1229,7 +1252,7 @@ void solvekeymsg(block* now,block next) {
 	if (stop1) {
 		setbkmode(TRANSPARENT);
 		settextcolor(RGB(0, 0, 255));//设置字体颜色为粉红色
-		settextstyle(80, 0, _T("黑体"));//设置字体大小为30，字体为黑体
+		settextstyle(70, 0, _T("黑体"));//设置字体大小为30，字体为黑体
 		outtextxy(100, 160, _T("暂 停"));
 		outtextxy(100, 250, _T("按 BACK 继续"));
 		outtextxy(60, 340, _T("按 ESC 主菜单"));
@@ -1428,4 +1451,40 @@ void drawallframe(int x, int y)
 	setlinestyle(PS_SOLID, 5);//设置线条风格为实线
 	setlinecolor(RGB(253, 208, 222));//设置线条颜色为粉红色 但是好浅
 	fillrectangle(19, 19, x - 15 , y - 15);
+}
+void recordscore()
+{
+	if (game.score == 0) return;
+	if (game.score > readscore()) {
+		std::cout << "新纪录" << std::endl;
+		std::ofstream outFile("score.txt", std::ios::app);
+		if (outFile.is_open()) {
+			outFile << game.score << std::endl;
+			outFile.close();
+		}
+		else {
+			std::cerr << "无法打开文件" << std::endl;
+		} 
+	}
+	else {
+		std::cout << "不是新纪录" << std::endl;
+	}
+}
+int readscore()
+{
+	std::ifstream inFile("score.txt");
+	if (inFile.is_open()) {
+		std::string line;
+		int lastscore;
+		while (std::getline(inFile, line)) {
+			lastscore = std::stoi(line);
+			std::cout << "读取的分数: " << lastscore << std::endl;
+		}
+		return lastscore;
+		inFile.close();
+	}
+	else {
+		std::cerr << "无法打开文件" << std::endl;
+		return 0;
+	}
 }
